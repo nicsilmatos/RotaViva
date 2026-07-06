@@ -14,7 +14,7 @@ export async function getPerfilEntregador() {
     .eq('id', sessao.user.id)
     .single();
 
-    if (error) throw new error;
+    if (error) throw error;
     return data;
 }
 
@@ -44,7 +44,7 @@ export async function criarPerfilEntregador(id, nome, identificacao, role = 'ent
  * (a RLS já bloqueia isso no banco; essa função só expõe o que o banco permite).
  */
 
-export async function listaEntregadores() {
+export async function listarEntregadores() {
     const {data, error} = await supabase
     .from('entregadores')
     .select('*')

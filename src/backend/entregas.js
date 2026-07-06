@@ -16,7 +16,7 @@ export async function criarEntrega(entregadorId, dados) {
         codigo_pacote: dados.codigo_pacote,
         destinatario_nome: dados.destinatario_nome,
         endereco: dados.endereco,
-        latitude: dados.latidude,
+        latitude: dados.latitude,
         longitude: dados.longitude,
         status: 'pendente',
     })
@@ -31,7 +31,7 @@ export async function criarEntrega(entregadorId, dados) {
  * Lista as entregas pendentes do entregador logado.
  */
 
-export async function listaPendentes(entregadorId) {
+export async function listarPendentes(entregadorId) {
     const {data, error} = await supabase
     .from('entregas')
     .select('*')
@@ -66,12 +66,12 @@ export async function buscarEntregaPorId(entregaId) {
  * @param novoStatus - 'entregue' ou 'falha'
  */
 
-export async function AtualizarStatus(entregaId, novoStatus) {
+export async function atualizarStatus(entregaId, novoStatus) {
     const {data, error} = await supabase
     .from('entregas')
     .update({
         status: novoStatus,
-        registrado_em: new Date().toDateString,
+        registrado_em: new Date().toISOString,
     })
     .eq('id', entregaId)
     .select()

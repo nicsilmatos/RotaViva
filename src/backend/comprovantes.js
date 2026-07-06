@@ -15,7 +15,7 @@ import { decode } from "base64-arraybuffer";
 export async function uploadComprovante(entregaId, entregadorId, fotoUri) {
     //le o arquivo local como basde64
     const base64 = await FileSystem.readAsStringAsync(fotoUri, {
-        encoding: FileSystem.EncodingType.EncodingType.base64,
+        encoding: FileSystem.EncodingType.Base64,
     });
 
     const caminho = `${entregadorId}/${entregaId}.jpg`;
