@@ -71,7 +71,7 @@ export async function atualizarStatus(entregaId, novoStatus) {
     .from('entregas')
     .update({
         status: novoStatus,
-        registrado_em: new Date().toISOString,
+        registrado_em: new Date().toISOString(),
     })
     .eq('id', entregaId)
     .select()

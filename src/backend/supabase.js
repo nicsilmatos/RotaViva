@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 //Guarda a sessão auth no SecureStore do dispositivo (não no AsyncStorage)
 const ExpoSecureStoreAdapter = {
     getItem: (key) => SecureStorage.getItemAsync(key),
-    setItem: (key, value) => SecureStorage.getItemAsync(key, value),
+    setItem: (key, value) => SecureStorage.setItemAsync(key, value),
     removeItem: (key) => SecureStorage.deleteItemAsync(key),
 };
 
