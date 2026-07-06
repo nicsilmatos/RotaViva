@@ -9,21 +9,23 @@ import { supabase } from "./supabase";
  */
 
 export async function criarEntrega(entregadorId, dados) {
+    // Insere as informações na tabela 'entregas'
     const {data, error} = await supabase
     .from('entregas')
     .insert({
-        entregador_id: entregadorId,
+        entregador_id: entregadorId, // Vincula ao entregador que está criando
         codigo_pacote: dados.codigo_pacote,
         destinatario_nome: dados.destinatario_nome,
         endereco: dados.endereco,
         latitude: dados.latitude,
         longitude: dados.longitude,
-        status: 'pendente',
+        status: 'pendente',  // Toda entrega nova começa com o status 'pendente'
     })
-    .select()
-    .single();
+    .select() // Pede para o banco devolver os dados criados (precisamos do ID gerado)
+    .single(); // Garante que retorna apenas esse registro
 
     if (error) throw error;
+    // Retorna a entrega criada
     return data;
 }
 
@@ -32,14 +34,16 @@ export async function criarEntrega(entregadorId, dados) {
  */
 
 export async function listarPendentes(entregadorId) {
+    // Busca na tabela 'entregas'
     const {data, error} = await supabase
     .from('entregas')
     .select('*')
-    .eq('entregador_id', entregadorId)
-    .eq('status', 'pendente')
-    .order('criado_em', { ascending: false });
+    .eq('entregador_id', entregadorId) // Onde o entregador seja o informado
+    .eq('status', 'pendente') // E onde o status seja rigorosamente 'pendente'
+    .order('criado_em', { ascending: false }); // Mostra as mais recentes primeiro
 
     if (error) throw error;
+    // Retorna a lista de entregas pendentes
     return data;   
 }
 
@@ -48,13 +52,15 @@ export async function listarPendentes(entregadorId) {
  */
 
 export async function buscarEntregaPorId(entregaId) {
+    //busca na tabela "entregas"
     const {data, error} = await supabase
     .from('entregas')
     .select('*')
-    .eq('id', entregaId)
-    .single();
+    .eq('id', entregaId) // Onde o ID seja igual ao ID que passamos para a função
+    .single(); // Traz apenas essa entrega
 
     if (error) throw error;
+    // Retorna a entrega encontrada
     return data;
 }
 
@@ -67,16 +73,18 @@ export async function buscarEntregaPorId(entregaId) {
  */
 
 export async function atualizarStatus(entregaId, novoStatus) {
+    //atualiza a tabela "entregas"
     const {data, error} = await supabase
     .from('entregas')
     .update({
-        status: novoStatus,
-        registrado_em: new Date().toISOString(),
+        status: novoStatus,  // Define o novo status enviado ('entregue' ou 'falha')
+        registrado_em: new Date().toISOString(),  // Grava a data e hora exata de agora
     })
-    .eq('id', entregaId)
+    .eq('id', entregaId) // Apenas na entrega com o ID correspondente
     .select()
     .single();
 
     if (error) throw error;
+    // Retorna a entrega atualizada
     return data;
 }
