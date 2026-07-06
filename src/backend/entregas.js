@@ -88,3 +88,22 @@ export async function atualizarStatus(entregaId, novoStatus) {
     // Retorna a entrega atualizada
     return data;
 }
+
+/**
+ * Lista as entregas concluídas. Como expl
+ *
+ * @param entregadorId
+ */
+export async function listarConcluidas(entregadorId) {
+    //
+    const {data, error} = await supabase
+    .from('entregas')
+    .select('*')
+    .eq('entregador_id', entregadorId)
+    .in('status', ['entregue', 'falha']) //procura os pedidos com status concluídos, mesmo sendo entregue ou não, a pendência foi concluída e esse é o pedido do guia.
+    .order('criado_em', {ascending: false})
+
+    if (error) throw error;
+
+    return data;
+}
