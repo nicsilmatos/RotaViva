@@ -8,7 +8,7 @@ CREATE TABLE entregadores (
 
 CREATE TABLE entregas (
     id UUID PRIMARY KEY REFERENCES gen_random_uuid(),
-    entregador_id UUID NOT NULL REFERENCES entregadores(id),
+    entregador_id UUID NOT NULL REFERENCES entregadores(id) ON DELETE SET NULL, /*O 'on delete set null' é importante porque, se um entregador for demitido, ele tem direito que a empresa apague todos os dados relacionados a ele.*/
     codigo_pacote TEXT NOT NULL,
     destinatario_nome TEXT NOT NULL
     endereco TEXT NOT NULL
