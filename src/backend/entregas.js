@@ -90,7 +90,7 @@ export async function atualizarStatus(entregaId, novoStatus) {
 }
 
 /**
- * Lista as entregas concluídas. Como expl
+ * Lista as entregas concluídas.
  *
  * @param entregadorId
  */
@@ -102,6 +102,52 @@ export async function listarConcluidas(entregadorId) {
     .eq('entregador_id', entregadorId)
     .in('status', ['entregue', 'falha']) //procura os pedidos com status concluídos, mesmo sendo entregue ou não, a pendência foi concluída e esse é o pedido do guia.
     .order('criado_em', {ascending: false})
+
+    if (error) throw error;
+
+    return data;
+}
+
+/**
+ * Atualiza informações da entrega (não tem haver com o status)
+ *
+ * @param entregaId
+ * @param dados
+ */
+
+export async function atualizarEntrega(entregaId, dados) {
+     const {data, error} = await supabase
+     .from('entregas')
+     .update({
+        codigo_pacote: dados.codigo_pacote,
+        destinatario_nome: dados.destinatario_nome,
+        endereco: dados.endereco,
+        latitude: dados.latitude,
+        longitude: dados.longitude
+     })
+     .eq('Id', entregaId)
+     .select()
+     .single()
+
+     if (error) throw error;
+
+     return data;
+}
+
+/**
+ * Exclui uma entrega definitivamente
+ *
+ * @param entregaId
+ */
+
+
+export async function deletarEntrega(entregaId){
+    const {data, error} = await supabase
+    .from('entregas')
+    .delete()
+    .eq('id', entregaId)
+    .select()
+    .single()
 
     if (error) throw error;
 
