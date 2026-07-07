@@ -1,15 +1,15 @@
-import {useCameraPermissions} from 'expo-camera';
-import {useEffect} from 'react';
-import {Text, Button} from 'react-native';
+import {CameraView, useCameraPermissions} from 'expo-camera';
+import {useRef} from 'react';
+import {Text,Button} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
  export default function RegistrarEntregaScreen() {
     const [permissao , solicitarPermissao] = useCameraPermissions();
+     const cameraRef = useRef(null);
 
     //Enquanto o hook ainda não terminou de consultar o sistema operacional
-    // permissao vem como null. 
-    if (!permissao) {
-        //Ainda carregando os status da permissão 
+    // permissão vem com null 
+    if (!permissao) { 
        return <SafeAreaView style={{ flex: 1 }} />;
  }
 
@@ -29,11 +29,13 @@ import {SafeAreaView} from 'react-native-safe-area-context';
             //e o componente re-renderiza automaticamente 
 }
 
-//Se chegar aqui a permissão já está autorizada
+//Se chegar aqui a permissão já está autorizada  
 
 return (
     <SafeAreaView style={{ flex: 1 }}>
-        <Text>Câmera autorizada - próxima etapa: abrir a câmera de verdade.</Text>
+        <CameraView ref={cameraRef} style={{flex: 1}} facing = "back">
+        <Button title ="Tirar foto" onPress={()=> {}}/>
+        </CameraView>
     </SafeAreaView>
  );
 }
