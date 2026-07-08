@@ -1,6 +1,6 @@
 import {CameraView, useCameraPermissions} from 'expo-camera';
 import {useRef} from 'react';
-import {Text,Button} from 'react-native';
+import {View,Text,Button} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
  export default function RegistrarEntregaScreen() {
@@ -31,11 +31,14 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 //Se chegar aqui a permissão já está autorizada  
 
-return (
+    return (
     <SafeAreaView style={{ flex: 1 }}>
-        <CameraView ref={cameraRef} style={{flex: 1}} facing = "back">
-        <Button title ="Tirar foto" onPress={()=> {}}/>
-        </CameraView>
+      <View style={{ flex: 1 }}>
+        <CameraView ref={cameraRef} style={{ flex: 1 }} facing="back" />
+        <View style={{ position: 'absolute', bottom: 40, alignSelf: 'center' }}>
+          <Button title="Tirar foto" onPress={tirarFoto} />
+        </View>
+      </View>
     </SafeAreaView>
- );
+  );
 }
