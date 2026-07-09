@@ -1,1 +1,0 @@
-Esse schema é só para ser adicionado nas tabelas do supabase, não mantenha no código. Quando fizer um merge, tire-o.
