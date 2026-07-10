@@ -1,80 +1,112 @@
+// Tela de registro de entrega:
+// tira a foto, pega a localização e envia a imagem para o Supabase.
+
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Location from 'expo-location';
+
+// API legacy usada porque os métodos de leitura em base64
+// ainda são compatíveis com o SDK utilizado.
 import * as FileSystem from 'expo-file-system/legacy';
+
+// Converte base64 em ArrayBuffer (formato aceito pelo Storage).
 import { decode } from 'base64-arraybuffer';
+
 import { useRef, useState } from 'react';
 import { View, Text, Button, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+// Cliente do Supabase já configurado no projeto.
 import { supabase } from '../../backend/supabase';
 
 export default function RegistrarEntregaScreen() {
-  // Hook que verifica o status da permissão da câmera
-  // e fornece a função para solicitar essa permissão.
+  // Permissão da câmera.
   const [permissao, solicitarPermissao] = useCameraPermissions();
 
-  // Referência para acessar a câmera (ex.: tirar foto via cameraRef.current.takePictureAsync()).
+  // Referência da câmera.
   const cameraRef = useRef(null);
 
-  // Guarda o caminho local da última foto tirada.
+  // Guarda a foto e a localização capturadas.
   const [fotoUri, setFotoUri] = useState(null);
-
-  // Guarda a localização capturada logo após a foto.
   const [localizacao, setLocalizacao] = useState(null);
 
-  // Enquanto o status da permissão de câmera ainda está sendo carregado.
+  // Enquanto verifica a permissão.
   if (!permissao) {
     return <SafeAreaView style={{ flex: 1 }} />;
   }
 
-  // Caso o usuário ainda não tenha permitido o acesso à câmera.
+  // Caso o usuário ainda não tenha liberado a câmera.
   if (!permissao.granted) {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <Text>Precisamos da sua permissão para acessar a câmera</Text>
-        <Button title="Solicitar Permissão" onPress={solicitarPermissao} />
+
+        <Button
+          title="Permitir"
+          onPress={solicitarPermissao}
+        />
       </SafeAreaView>
     );
   }
 
-  // Lê o arquivo local da foto e envia para o Supabase Storage.
+  // Faz o upload da foto para o Supabase Storage
+  // e retorna a URL pública do arquivo.
   async function enviarFotoParaStorage(uri) {
-  try {
-    const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
+    try {
+      // Lê a imagem em base64.
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
 
-    const arrayBuffer = decode(base64);
-    const nomeArquivo = `entrega-${Date.now()}.jpg`;
+      // Converte para ArrayBuffer.
+      const arrayBuffer = decode(base64);
 
-    const { data, error } = await supabase.storage
-      .from('comprovantes')
-      .upload(nomeArquivo, arrayBuffer, { contentType: 'image/jpeg' });
+      // Nome único para evitar sobrescrever arquivos.
+      const nomeArquivo = `entrega-${Date.now()}.jpg`;
 
-    if (error) {
-      console.log('Erro no upload:', error.message);
+      // Envia a imagem para o bucket.
+      const { data, error } = await supabase.storage
+        .from('comprovantes')
+        .upload(nomeArquivo, arrayBuffer, {
+          contentType: 'image/jpeg',
+        });
+
+      if (error) {
+        console.log('Erro no upload:', error.message);
+        return null;
+      }
+
+      // Obtém a URL pública da imagem enviada.
+      const { data: urlData } = supabase.storage
+        .from('comprovantes')
+        .getPublicUrl(data.path);
+
+      console.log('URL pública:', urlData.publicUrl);
+
+      return urlData.publicUrl;
+    } catch (err) {
+      console.log('Erro ao enviar a foto:', err.message);
       return null;
     }
-
-    return data.path;
-  } catch (err) {
-    console.log('Erro inesperado ao processar/enviar a foto:', err.message);
-    return null;
   }
-}
 
-  // Fluxo principal: tira a foto -> captura o GPS -> envia pro Storage.
+  // Tira a foto, captura a localização
+  // e envia a imagem para o Storage.
   async function tirarFoto() {
     if (!cameraRef.current) return;
 
+    // Captura a foto.
     const foto = await cameraRef.current.takePictureAsync();
     setFotoUri(foto.uri);
 
+    // Solicita permissão para acessar a localização.
     const { status } = await Location.requestForegroundPermissionsAsync();
+
     if (status !== 'granted') {
       console.log('Permissão de localização negada');
       return;
     }
 
+    // Obtém a localização atual.
     const posicao = await Location.getCurrentPositionAsync({
       accuracy: Location.Accuracy.High,
     });
@@ -85,20 +117,24 @@ export default function RegistrarEntregaScreen() {
       timestamp: posicao.timestamp,
     });
 
-    const caminhoNoStorage = await enviarFotoParaStorage(foto.uri);
-    console.log('Foto salva em:', caminhoNoStorage);
+    // Envia a foto para o Storage.
+    const urlPublica = await enviarFotoParaStorage(foto.uri);
+
+    console.log('Foto disponível em:', urlPublica);
   }
 
-  // Se já existe uma foto tirada, mostra a prévia dela em vez da câmera.
+  // Exibe a foto capturada e a localização.
   if (fotoUri) {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <Image source={{ uri: fotoUri }} style={{ flex: 1 }} />
+
         {localizacao && (
           <Text>
             Lat: {localizacao.latitude} | Long: {localizacao.longitude}
           </Text>
         )}
+
         <Button
           title="Tirar outra foto"
           onPress={() => {
@@ -110,12 +146,24 @@ export default function RegistrarEntregaScreen() {
     );
   }
 
-  // Se a permissão de câmera foi concedida e não há foto ainda, mostra o preview.
+  // Tela inicial: mostra a câmera.
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
-        <CameraView ref={cameraRef} style={{ flex: 1 }} facing="back" />
-        <View style={{ position: 'absolute', bottom: 40, alignSelf: 'center' }}>
+        <CameraView
+          ref={cameraRef}
+          style={{ flex: 1 }}
+          facing="back"
+        />
+
+        {/* Botão sobreposto à câmera */}
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 40,
+            alignSelf: 'center',
+          }}
+        >
           <Button title="Tirar foto" onPress={tirarFoto} />
         </View>
       </View>
