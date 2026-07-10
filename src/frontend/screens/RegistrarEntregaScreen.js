@@ -1,24 +1,30 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import * as Location from 'expo-location';
-import * as FileSystem from 'expo-file-system/legacy';
-import { decode } from 'base64-arraybuffer';
 import { useRef, useState } from 'react';
-import { View, Text, Button, Image } from 'react-native';
+import { View, Text, Button, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { supabase } from '../../backend/supabase';
+import { capturarLocalizacao } from '../services/locationService';
+import { enviarFotoParaStorage } from '../services/storageService';
+import { salvarDadosDaEntrega } from '../services/entregaService';
 
+// Fixo por enquanto: a tela de "escolher qual entrega estou fazendo" ainda não
+// existe no app. Quando existir, isso vira um parâmetro de navegação.
 const ENTREGA_ID_TESTE = '83229f20-c107-478d-b7ff-30b2f18ad993';
 
 export default function RegistrarEntregaScreen() {
   const [permissao, solicitarPermissao] = useCameraPermissions();
   const cameraRef = useRef(null);
+
   const [fotoUri, setFotoUri] = useState(null);
   const [localizacao, setLocalizacao] = useState(null);
+  const [carregando, setCarregando] = useState(false); // controla o spinner
+  const [erro, setErro] = useState(null); // mensagem de erro pra mostrar na tela
 
+  // Ainda consultando o sistema operacional sobre a permissão.
   if (!permissao) {
     return <SafeAreaView style={{ flex: 1 }} />;
   }
 
+  // Já sabemos a resposta, e é "não".
   if (!permissao.granted) {
     return (
       <SafeAreaView style={{ flex: 1 }}>
@@ -28,110 +34,64 @@ export default function RegistrarEntregaScreen() {
     );
   }
 
-  async function enviarFotoParaStorage(uri) {
-    try {
-      const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-
-      const arrayBuffer = decode(base64);
-      const nomeArquivo = `entrega-${Date.now()}.jpg`;
-
-      const { data, error } = await supabase.storage
-        .from('comprovantes')
-        .upload(nomeArquivo, arrayBuffer, { contentType: 'image/jpeg' });
-
-      if (error) {
-        console.log('Erro no upload:', error.message);
-        return null;
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('comprovantes')
-        .getPublicUrl(data.path);
-
-      console.log('URL pública:', urlData.publicUrl);
-      return urlData.publicUrl;
-    } catch (err) {
-      console.log('Erro inesperado ao processar/enviar a foto:', err.message);
-      return null;
-    }
-  }
-
-  async function salvarDadosDaEntrega(urlFoto, localizacaoAtual) {
-    const { data, error } = await supabase
-      .from('entregas')
-      .update({
-        foto_url: urlFoto,
-        latitude: localizacaoAtual.latitude,   
-        longitude: localizacaoAtual.longitude,
-        status: 'Entregue',
-     })
-      .eq('id', ENTREGA_ID_TESTE);
-
-    if (error) {
-      console.log('Erro ao salvar no banco:', error.message);
-      return false;
-    }
-
-    console.log('Entrega atualizada com sucesso!');
-    return true;
-  }
-
+  // Orquestra o fluxo inteiro: foto -> GPS -> upload -> banco.
+  // Um único try/catch cobre as 4 etapas — se qualquer uma falhar,
+  // cai direto no catch e mostra o erro pro usuário.
   async function tirarFoto() {
     if (!cameraRef.current) return;
 
-    const foto = await cameraRef.current.takePictureAsync();
-    setFotoUri(foto.uri);
+    setErro(null);
+    setCarregando(true);
 
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      console.log('Permissão de localização negada');
-      return;
-    }
+    try {
+      const foto = await cameraRef.current.takePictureAsync();
+      setFotoUri(foto.uri);
 
-    const posicao = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.High,
-    });
+      const localizacaoAtual = await capturarLocalizacao();
+      setLocalizacao(localizacaoAtual);
 
-    const localizacaoAtual = {
-      latitude: posicao.coords.latitude,
-      longitude: posicao.coords.longitude,
-      timestamp: posicao.timestamp,
-    };
-    setLocalizacao(localizacaoAtual);
+      const urlPublica = await enviarFotoParaStorage(foto.uri);
 
-    const urlPublica = await enviarFotoParaStorage(foto.uri);
-    console.log('Foto disponível em:', urlPublica);
-
-    if (urlPublica) {
-      await salvarDadosDaEntrega(urlPublica, localizacaoAtual);
+      await salvarDadosDaEntrega(ENTREGA_ID_TESTE, urlPublica, localizacaoAtual);
+    } catch (err) {
+      setErro(err.message);
+    } finally {
+      // finally roda sempre, com erro ou sem — garante que o spinner some.
+      setCarregando(false);
     }
   }
 
+  // Já existe uma foto: mostra prévia + status (carregando / erro / sucesso).
   if (fotoUri) {
     return (
       <SafeAreaView style={{ flex: 1 }}>
         <Image source={{ uri: fotoUri }} style={{ flex: 1 }} />
-        {localizacao && (
-          <Text>
-            Lat: {localizacao.latitude} | Long: {localizacao.longitude}
-          </Text>
+
+        {carregando && <ActivityIndicator size="large" />}
+
+        {erro && <Text style={{ color: 'red' }}>Erro: {erro}</Text>}
+
+        {!carregando && !erro && localizacao && (
+          <Text>Entrega registrada com sucesso!</Text>
         )}
+
         <Button
           title="Tirar outra foto"
           onPress={() => {
             setFotoUri(null);
             setLocalizacao(null);
+            setErro(null);
           }}
         />
       </SafeAreaView>
     );
   }
 
+  // Estado padrão: câmera liberada, sem foto ainda -> mostra o preview.
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
+        {/* CameraView não aceita filhos; o botão fica por fora, com absolute. */}
         <CameraView ref={cameraRef} style={{ flex: 1 }} facing="back" />
         <View style={{ position: 'absolute', bottom: 40, alignSelf: 'center' }}>
           <Button title="Tirar foto" onPress={tirarFoto} />
