@@ -5,16 +5,22 @@ import { supabase } from "./supabase";
  */
 
 export async function getPerfilEntregador() {
+    // Pergunta para o sistema de autenticação quem é o usuário logado agora
     const {data: sessao} = await supabase.auth.getUser();
+    // Se não tiver nenhum usuário logado, joga um erro na tela
     if (!sessao?.user) throw new Error('Nenhum usuário autenticado.');
 
+    // Vai na tabela 'entregadores' e busca as informações dele
     const {data, error} = await supabase
     .from('entregadores')
-    .select('*')
-    .eq('id', sessao.user.id)
-    .single();
+    .select('*') // Pega todos os campos da tabela
+    .eq('id', sessao.user.id) // Onde o ID da tabela seja igual ao ID do usuário logado
+    .single(); // Garante que vai trazer apenas um registro, e não uma lista
 
+    // Se der erro na busca do banco, avisa o sistema
     if (error) throw error;
+
+    // Retorna os dados do entregador encontrados
     return data;
 }
 
@@ -29,13 +35,15 @@ export async function getPerfilEntregador() {
  */
 
 export async function criarPerfilEntregador(id, nome, identificacao, role = 'entregador'){
+    // Insere os dados novos na tabela 'entregadores'
     const {data, error} = await supabase
     .from('entregadores')
-    .insert({id, nome, identificacao, role})
-    .select()
-    .single()
+    .insert({id, nome, identificacao, role}) // Passa as informações recebidas
+    .select() // Pede para retornar os dados que acabaram de ser inseridos
+    .single() // Garante que retorna apenas esse novo registro criado
 
     if (error) throw error;
+    // Retorna os dados do novo entregador cadastrado
     return data;
 }
 
@@ -47,9 +55,10 @@ export async function criarPerfilEntregador(id, nome, identificacao, role = 'ent
 export async function listarEntregadores() {
     const {data, error} = await supabase
     .from('entregadores')
-    .select('*')
-    .order('nome')
+    .select('*') // Traz todos os campos
+    .order('nome') // Organiza a lista em ordem alfabética pelo nome
     
     if (error) throw error;
+    // Retorna a lista de entregadores
     return data;
 }
