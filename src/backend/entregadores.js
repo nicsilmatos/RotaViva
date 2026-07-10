@@ -34,11 +34,11 @@ export async function getPerfilEntregador() {
  * @param role - 'entregador' ou 'supervisor'
  */
 
-export async function criarPerfilEntregador(id, nome, identificacao, role = 'entregador'){
+export async function criarPerfilEntregador(id, nome, identificacao = 'entregador'){
     // Insere os dados novos na tabela 'entregadores'
     const {data, error} = await supabase
     .from('entregadores')
-    .insert({id, nome, identificacao, role}) // Passa as informações recebidas
+    .insert({id, nome, identificacao }) // Passa as informações recebidas
     .select() // Pede para retornar os dados que acabaram de ser inseridos
     .single() // Garante que retorna apenas esse novo registro criado
 
