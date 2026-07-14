@@ -54,7 +54,7 @@ export default function ListaEntregasScreen({ route, navigation }) {
     return (
       <TouchableOpacity
         style={styles.item}
-        onPress={() => navigation.navigate('DetalheEntrega', { entregaId: item.id })}
+        onPress={() => navigation.navigate('DetalheEntrega', { entrega: item })}
       >
         <Text style={styles.itemTitulo}>{item.codigo_pacote} — {item.destinatario_nome}</Text>
         <Text style={styles.itemStatus}>{item.status}</Text>

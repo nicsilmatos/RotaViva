@@ -40,6 +40,7 @@ function formatarData(dataISO) {
 export default function DetalheEntregaScreen({ route }) {
   // Pega a entrega passada como parâmetro pela tela de listagem
   const { entrega } = route.params;
+  
 
   // Configuração visual baseada no status atual
   const config = STATUS_CONFIG[entrega.status] || STATUS_CONFIG.pendente;
