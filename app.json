@@ -20,13 +20,19 @@
         "foregroundImage": "./src/frontend/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.nicsilmatos.RotaViva"
     },
     "web": {
       "favicon": "./src/frontend/assets/favicon.png"
     },
     "plugins": [
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "2536dc0e-792a-4b29-8b97-5954230d7d3a"
+      }
+    }
   }
 }
