@@ -8,86 +8,99 @@ O aplicativo permite cadastrar entregadores, gerenciar entregas, registrar compr
 
 ##  Funcionalidades
 
-- Login de usuários
-- Cadastro de entregadores
-- Listagem de entregadores
-- Cadastro de entregas
-- Listagem de entregas
-- Visualização dos detalhes de uma entrega
-- Registro de comprovante de entrega
-- Captura de foto utilizando a câmera do dispositivo
-- Captura da localização GPS
-- Upload da imagem para o Supabase Storage
-- Armazenamento dos dados da entrega no banco de dados
-- Testes automatizados com Jest
+-  Gerenciamento de rotas
+-  Atualização do status das entregas
+-  Rastreamento GPS em tempo real
+-  Registro de comprovante de entrega
+-  Upload automático para o Supabase Storage
+-  Histórico de entregas
+- Persistência de dados offline
 
 ---
 
-##  Tecnologias Utilizadas
+##  Stack Tecnológica
 
-### Front-end
-
-- React Native
-- Expo SDK 54
-- React Navigation
-- Expo Camera
-- Expo Location
-- Expo File System
-
-### Back-end
-
-- Supabase
-- Supabase Storage
-
-### Testes
-
-- Jest
-- Testing Library
+| Camada | Tecnologia |
+|---------|------------|
+| Mobile | React Native + Expo SDK 54 |
+| Linguagem | JavaScript / TypeScript |
+| Backend | Supabase |
+| Banco | PostgreSQL |
+| Storage | Supabase Storage |
+| Câmera | Expo Camera |
+| Localização | Expo Location |
+| Arquivos | Expo File System |
+| Testes | Jest |
+| Build | Expo Application Services (EAS) |
 
 ---
 
-##  Estrutura do Projeto
+#  Estrutura do Projeto
 
-```
-src
+```text
+RotaViva
+├── src
+│   ├── backend
+│   │   ├── supabase.ts
+│   │   ├── entregas.ts
+│   │   ├── entregadores.ts
+│   │   └── comprovantes.ts
+│   │
+│   └── frontend
+│       ├── assets
+│       ├── components
+│       ├── navigation
+│       ├── screens
+│       └── services
 │
-├── backend
-│   ├── comprovantes.js
-│   ├── entregadores.js
-│   ├── entregas.js
-│   └── supabase.js
-│
-├── frontend
-│   ├── assets
-│   ├── components
-│   ├── navigation
-│   ├── screens
-│   └── services
-│
-└── __tests__
+├── App.js
+├── package.json
+├── app.json
+├── eas.json
+└── README.md
 ```
 
 ---
 
-##  Dependências Principais
+#  Banco de Dados
 
-- React Native
-- Expo
-- React Navigation
-- Supabase
-- Expo Camera
-- Expo Location
-- Expo File System
-- Expo Secure Store
+## Tabela `entregas`
+
+- id
+- entregador_id
+- codigo_pacote
+- destinatario_nome
+- endereco
+- status
+- foto_url
+- latitude
+- longitude
+- criado_em
+- atualizado_em
+- registrado_em
+
+## Tabela `entregadores`
+
+Responsável pelo cadastro dos entregadores vinculados às entregas.
+
+## Bucket `comprovantes`
+
+Armazena as imagens dos comprovantes utilizando o **Supabase Storage** com políticas de segurança (RLS).
 
 ---
 
-##  Instalação
+#  Como executar
 
-Clone o repositório:
+## Pré-requisitos
+
+- Node.js 22+
+- Git
+- Expo Go
+
+Clone o projeto:
 
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/nicsilmatos/RotaViva.git
 ```
 
 Entre na pasta:
@@ -102,117 +115,87 @@ Instale as dependências:
 npm install
 ```
 
-ou
-
-```bash
-yarn
-```
-
----
-
-##  Executando o Projeto
-
-Inicie o Expo:
-
-```bash
-npm start
-```
-
-Executar no Android:
-
-```bash
-npm run android
-```
-
-Executar no iOS:
-
-```bash
-npm run ios
-```
-
-Executar na Web:
-
-```bash
-npm run web
-```
-
----
-
-##  Variáveis de Ambiente
-
-Crie um arquivo `.env` na raiz do projeto contendo:
+Configure o arquivo `.env`:
 
 ```env
-EXPO_PUBLIC_SUPABASE_URL=Sua_URL
-EXPO_PUBLIC_SUPABASE_ANON_KEY=Sua_Chave
+EXPO_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=sua-chave
 ```
 
----
+Execute:
 
-##  Fluxo de Registro de Entrega
+```bash
+npx expo start --clear
+```
 
-1. O usuário acessa a tela de registro.
-2. O aplicativo solicita permissão para uso da câmera.
-3. É capturada uma foto do comprovante.
-4. A localização GPS é obtida automaticamente.
-5. A imagem é enviada ao Supabase Storage.
-6. A URL pública da imagem é gerada.
-7. Os dados da entrega são salvos no banco de dados.
+Depois basta escanear o QR Code pelo Expo Go.
 
 ---
 
-## 🧪 Testes
+#  Fluxo do Registro de Entrega
 
-Para executar os testes:
+```text
+Registrar entrega
+        │
+        ▼
+Captura da foto
+        │
+        ▼
+Captura do GPS
+        │
+        ▼
+Upload para o Storage
+        │
+        ▼
+URL pública da imagem
+        │
+        ▼
+Gravação no banco
+```
+
+A lógica foi separada em serviços independentes:
+
+- `locationService`
+- `storageService`
+- `entregaService`
+
+A tela apenas coordena o fluxo, facilitando manutenção e testes.
+
+---
+
+#  Segurança
+
+O projeto utiliza **Row Level Security (RLS)** no Supabase para proteger os dados.
+
+Atualmente existe uma política temporária permitindo uploads anônimos durante o desenvolvimento, que será substituída após a implementação da autenticação.
+
+---
+
+#  Testes
 
 ```bash
 npm test
 ```
 
-Os testes contemplam:
+---
 
-- Backend
-- Componentes
-- Telas
-- Serviços
+#  Equipe
+
+| Integrante | GitHub |
+|------------|--------|
+| Nicole Matos | https://github.com/nicsilmatos |
+| Don Laranjo | https://github.com/laranjodupy |
+| Sabryna | https://github.com/sabrynavn |
+| Leonardo Maia | https://github.com/leonardomaiaa |
 
 ---
 
-## Arquitetura
+#  Status
 
-O projeto segue uma separação em camadas:
-
-- **Frontend:** Interface do usuário
-- **Services:** Regras de comunicação e serviços
-- **Backend:** Comunicação com o Supabase
-- **Navigation:** Controle das rotas
-- **Components:** Componentes reutilizáveis
-- **Tests:** Testes automatizados
+Projeto em desenvolvimento como parte de um trabalho acadêmico voltado à manutenção e evolução de aplicações mobile.
 
 ---
 
-##  Melhorias Futuras
+# Licença
 
-- Autenticação completa com Supabase Auth
-- Histórico de entregas
-- Upload offline
-- Sincronização automática
-- Notificações Push
-- Dashboard de entregadores
-- Assinatura digital do cliente
-- Mapa das entregas em tempo real
-
----
-
-##  Desenvolvido com
-
-- React Native
-- Expo
-- Supabase
-- JavaScript
-
----
-
-##  Licença
-
-Este projeto foi desenvolvido para fins acadêmicos e de aprendizagem.
+Este projeto foi desenvolvido para fins acadêmicos.
