@@ -1,170 +1,218 @@
-# RotaViva 
+#  RotaViva
 
-Aplicativo Android para logística de última milha (*last-mile logistics*), desenvolvido em **React Native + Expo**, com backend em **Supabase**.
+O **RotaViva** é um aplicativo mobile desenvolvido em **React Native com Expo** para auxiliar no gerenciamento e registro de entregas.
 
-O RotaViva permite que entregadores gerenciem rotas, atualizem o status de entregas, e registrem comprovantes de entrega com **foto + localização GPS em tempo real**, mesmo em cenários com conectividade instável.
+O aplicativo permite cadastrar entregadores, gerenciar entregas, registrar comprovantes por meio de fotografia, capturar a localização GPS do entregador e armazenar essas informações utilizando o **Supabase**.
 
 ---
 
 ##  Funcionalidades
 
-- **Gerenciamento de rotas** de entrega
-- **Atualização de status** das entregas
-- **Persistência de dados offline**
-- **Histórico detalhado** de entregas realizadas
-- **Rastreamento GPS em tempo real**
-- **Comprovante de entrega (Proof of Delivery)**: captura de foto via câmera nativa, com localização GPS vinculada ao instante exato da captura
+- Login de usuários
+- Cadastro de entregadores
+- Listagem de entregadores
+- Cadastro de entregas
+- Listagem de entregas
+- Visualização dos detalhes de uma entrega
+- Registro de comprovante de entrega
+- Captura de foto utilizando a câmera do dispositivo
+- Captura da localização GPS
+- Upload da imagem para o Supabase Storage
+- Armazenamento dos dados da entrega no banco de dados
+- Testes automatizados com Jest
 
 ---
 
-##  Stack técnica
+##  Tecnologias Utilizadas
 
-| Camada | Tecnologia |
-|---|---|
-| App mobile | React Native `0.81.5` + Expo SDK `54` |
-| Linguagem | JavaScript / TypeScript |
-| Backend / Banco de dados | Supabase (PostgreSQL) |
-| Armazenamento de arquivos | Supabase Storage |
-| Câmera | `expo-camera` |
-| Geolocalização | `expo-location` |
-| Sistema de arquivos | `expo-file-system` (API legacy) |
-| Área segura de tela | `react-native-safe-area-context` |
-| Testes | Jest |
-| Build / Distribuição | EAS (Expo Application Services) |
+### Front-end
+
+- React Native
+- Expo SDK 54
+- React Navigation
+- Expo Camera
+- Expo Location
+- Expo File System
+
+### Back-end
+
+- Supabase
+- Supabase Storage
+
+### Testes
+
+- Jest
+- Testing Library
 
 ---
 
-##  Estrutura do projeto
+##  Estrutura do Projeto
 
 ```
-RotaViva/
-├── src/
-│   ├── backend/
-│   │   ├── supabase.ts        # Client do Supabase (URL + chave anon)
-│   │   ├── entregas.ts        # Lógica/tipos relacionados a entregas
-│   │   └── entregadores.ts    # Lógica/tipos relacionados a entregadores
-│   │
-│   └── frontend/
-│       ├── assets/            # Ícones, splash screen, imagens
-│       ├── screens/           # Telas do aplicativo
-│       │   └── RegistrarEntregaScreen.js
-│       └── services/          # Lógica de negócio, separada da UI
-│           ├── locationService.js   # Captura de GPS com timeout de segurança
-│           ├── storageService.js    # Upload de fotos ao Supabase Storage
-│           └── entregaService.js    # Gravação dos dados da entrega no banco
+src
 │
-├── App.js
-├── app.json                   # Configuração do Expo
-├── eas.json                   # Configuração de build (EAS)
-├── jest.config.js / jest.setup.js
-├── package.json
-└── tsconfig.json
+├── backend
+│   ├── comprovantes.js
+│   ├── entregadores.js
+│   ├── entregas.js
+│   └── supabase.js
+│
+├── frontend
+│   ├── assets
+│   ├── components
+│   ├── navigation
+│   ├── screens
+│   └── services
+│
+└── __tests__
 ```
 
 ---
 
-## Modelo de dados (Supabase / PostgreSQL)
+##  Dependências Principais
 
-### Tabela `entregas`
-
-| Coluna | Tipo | Descrição |
-|---|---|---|
-| `id` | `uuid` | Identificador único (gerado automaticamente) |
-| `entregador_id` | `uuid` | Chave estrangeira → `entregadores.id` |
-| `codigo_pacote` | `text` | Código de identificação do pacote |
-| `destinatario_nome` | `text` | Nome de quem recebe a entrega |
-| `endereco` | `text` | Endereço de entrega |
-| `status` | `text` | Status atual (ex: `Pendente`, `Entregue`) |
-| `foto_url` | `text` | URL pública do comprovante fotográfico |
-| `latitude` | `float8` | Latitude capturada no momento da entrega |
-| `longitude` | `float8` | Longitude capturada no momento da entrega |
-| `criado_em` / `atualizado_em` / `registrado_em` | `timestamptz` | Timestamps automáticos |
-
-### Tabela `entregadores`
-Armazena os dados dos entregadores vinculados às entregas.
-
-### Storage — bucket `comprovantes`
-Bucket público onde as fotos de comprovante de entrega são armazenadas, protegido por políticas de **Row Level Security (RLS)**.
+- React Native
+- Expo
+- React Navigation
+- Supabase
+- Expo Camera
+- Expo Location
+- Expo File System
+- Expo Secure Store
 
 ---
 
-##  Como rodar o projeto localmente
+##  Instalação
 
-### Pré-requisitos
-- [Node.js](https://nodejs.org/) (recomendado: v22.x LTS)
-- [Git](https://git-scm.com/)
-- App **Expo Go** instalado no celular (Android/iOS)
-
-### Passo a passo
+Clone o repositório:
 
 ```bash
-# 1. Clone o repositório
-git clone https://github.com/nicsilmatos/RotaViva.git
-cd RotaViva
-
-# 2. Instale as dependências
-npm install
-
-# 3. Configure as variáveis de ambiente
-# Crie um arquivo .env na raiz do projeto:
+git clone <url-do-repositorio>
 ```
+
+Entre na pasta:
+
+```bash
+cd RotaViva
+```
+
+Instale as dependências:
+
+```bash
+npm install
+```
+
+ou
+
+```bash
+yarn
+```
+
+---
+
+##  Executando o Projeto
+
+Inicie o Expo:
+
+```bash
+npm start
+```
+
+Executar no Android:
+
+```bash
+npm run android
+```
+
+Executar no iOS:
+
+```bash
+npm run ios
+```
+
+Executar na Web:
+
+```bash
+npm run web
+```
+
+---
+
+##  Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto contendo:
 
 ```env
-EXPO_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
-EXPO_PUBLIC_SUPABASE_ANON_KEY=sua-chave-anon-publica
+EXPO_PUBLIC_SUPABASE_URL=Sua_URL
+EXPO_PUBLIC_SUPABASE_ANON_KEY=Sua_Chave
 ```
+
+---
+
+##  Fluxo de Registro de Entrega
+
+1. O usuário acessa a tela de registro.
+2. O aplicativo solicita permissão para uso da câmera.
+3. É capturada uma foto do comprovante.
+4. A localização GPS é obtida automaticamente.
+5. A imagem é enviada ao Supabase Storage.
+6. A URL pública da imagem é gerada.
+7. Os dados da entrega são salvos no banco de dados.
+
+---
+
+## 🧪 Testes
+
+Para executar os testes:
 
 ```bash
-# 4. Inicie o servidor de desenvolvimento
-npx expo start --clear
+npm test
 ```
 
-Escaneie o QR code exibido no terminal com o app **Expo Go** para abrir o projeto no seu celular.
+Os testes contemplam:
 
->  **Observação:** cada máquina/clone precisa rodar `npm install` individualmente, já que a pasta `node_modules` não é versionada no Git.
-
----
-
-## Segurança e RLS (Row Level Security)
-
-O bucket `comprovantes` e a tabela `entregas` utilizam políticas de RLS do Supabase para controlar quem pode inserir, ler ou atualizar dados. Como a autenticação de entregador ainda está em desenvolvimento, existe uma política temporária permitindo upload anônimo — que deve ser substituída pela política definitiva assim que o login de entregador estiver implementado.
+- Backend
+- Componentes
+- Telas
+- Serviços
 
 ---
 
-##  Arquitetura da funcionalidade "Câmera + GPS"
+## Arquitetura
 
-Fluxo do registro de entrega:
+O projeto segue uma separação em camadas:
 
-```
-Usuário toca em "Registrar entrega"
-        ↓
-Abre a câmera nativa (expo-camera)
-        ↓
-Foto é capturada
-        ↓
-Localização GPS é capturada logo em seguida (expo-location)
-        ↓
-Foto é enviada ao Supabase Storage
-        ↓
-URL pública + latitude + longitude + status
-são salvos na tabela `entregas`
-```
-
-A lógica é dividida em **services** independentes (`locationService`, `storageService`, `entregaService`), enquanto a tela (`RegistrarEntregaScreen`) atua apenas como orquestradora do fluxo e da interface — separando responsabilidades e facilitando manutenção e testes.
+- **Frontend:** Interface do usuário
+- **Services:** Regras de comunicação e serviços
+- **Backend:** Comunicação com o Supabase
+- **Navigation:** Controle das rotas
+- **Components:** Componentes reutilizáveis
+- **Tests:** Testes automatizados
 
 ---
 
-##  Equipe
+##  Melhorias Futuras
 
-| Nome | GitHub |
-|---|---|
-| Nicole Matos | [@nicsilmatos](https://github.com/nicsilmatos) |
-| Don Laranjo | [@laranjodupy](https://github.com/laranjodupy) |
-| Sabryna | [@sabrynavn](https://github.com/sabrynavn) |
-| Leonardo Maia | [@leonardomaiaa](https://github.com/leonardomaiaa) |
+- Autenticação completa com Supabase Auth
+- Histórico de entregas
+- Upload offline
+- Sincronização automática
+- Notificações Push
+- Dashboard de entregadores
+- Assinatura digital do cliente
+- Mapa das entregas em tempo real
 
 ---
 
-##  Status do projeto
+##  Desenvolvido com
 
-Projeto em desenvolvimento ativo, no contexto de um trabalho acadêmico/profissional de manutenção e evolução de aplicações mobile.
+- React Native
+- Expo
+- Supabase
+- JavaScript
+
+---
+
+##  Licença
+
+Este projeto foi desenvolvido para fins acadêmicos e de aprendizagem.
