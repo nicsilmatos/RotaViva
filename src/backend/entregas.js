@@ -84,6 +84,25 @@ export async function buscarEntregaPorId(entregaId) {
 }
 
 /**
+ * Lista as entregas concluídas (entregue ou falha) do entregador logado.
+ * Usada na tela de histórico para mostrar entregas já finalizadas.
+ */
+
+export async function listarConcluidas(entregadorId) {
+    // Busca na tabela 'entregas'
+    const {data, error} = await supabase
+    .from('entregas')
+    .select('*')
+    .eq('entregador_id', entregadorId) // Filtra pelo entregador logado
+    .in('status', ['entregue', 'falha']) // Traz tanto entregas bem-sucedidas quanto com falha
+    .order('registrado_em', { ascending: false }); // Mostra as mais recentes primeiro
+
+    if (error) throw error;
+    // Retorna a lista com as entregas já finalizadas
+    return data;
+}
+
+/**
  * Atualiza o status da entrega (pendente -> entregue / falha).
  * Marca automaticamente o horário do registro nesse momento.
  *

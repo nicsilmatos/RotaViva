@@ -60,10 +60,10 @@ export async function obterUrlComprovante(caminho, validadeSegundos = 3600) {
     // Pede ao Supabase um link seguro para o arquivo, que dura o tempo configurado (padrão 1 hora)
     const {data, error} = await supabase.storage
     .from('comprovantes')
-    .createSignedUrl(caminho, validadeSegundos)
+    .createSignedUrl(caminho, validadeSegundos);
 
     // Se der erro para gerar o link, avisa o sistema   
-    if (error) throw error
+    if (error) throw error;
 
     // Devolve o link gerado para que o app possa exibir a imagem na tela
     return data.signedUrl;  

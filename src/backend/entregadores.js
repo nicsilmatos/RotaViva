@@ -40,7 +40,7 @@ export async function criarPerfilEntregador(id, nome, identificacao = 'entregado
     .from('entregadores')
     .insert({id, nome, identificacao }) // Passa as informações recebidas
     .select() // Pede para retornar os dados que acabaram de ser inseridos
-    .single() // Garante que retorna apenas esse novo registro criado
+    .single(); // Garante que retorna apenas esse novo registro criado
 
     if (error) throw error;
     // Retorna os dados do novo entregador cadastrado
@@ -56,7 +56,7 @@ export async function listarEntregadores() {
     const {data, error} = await supabase
     .from('entregadores')
     .select('*') // Traz todos os campos
-    .order('nome') // Organiza a lista em ordem alfabética pelo nome
+    .order('nome'); // Organiza a lista em ordem alfabética pelo nome
     
     if (error) throw error;
     // Retorna a lista de entregadores
