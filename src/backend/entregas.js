@@ -86,6 +86,8 @@ export async function buscarEntregaPorId(entregaId) {
 /**
  * Lista as entregas concluídas (entregue ou falha) do entregador logado.
  * Usada na tela de histórico para mostrar entregas já finalizadas.
+ * 
+ * @param entregadorId
  */
 
 export async function listarConcluidas(entregadorId) {
@@ -94,8 +96,8 @@ export async function listarConcluidas(entregadorId) {
     .from('entregas')
     .select('*')
     .eq('entregador_id', entregadorId) // Filtra pelo entregador logado
-    .in('status', ['entregue', 'falha']) // Traz tanto entregas bem-sucedidas quanto com falha
-    .order('registrado_em', { ascending: false }); // Mostra as mais recentes primeiro
+    .in('status', ['entregue', 'falha']) //procura os pedidos com status concluídos, mesmo sendo entregue ou não, a pendência foi concluída e esse é o pedido do guia.
+    .order('criado_em', { ascending: false }); // Mostra as mais recentes primeiro
 
     if (error) throw error;
     // Retorna a lista com as entregas já finalizadas
@@ -124,24 +126,6 @@ export async function atualizarStatus(entregaId, novoStatus) {
 
     if (error) throw error;
     // Retorna a entrega atualizada
-    return data;
-}
-
-/**
- * Lista as entregas concluídas.
- *
- * @param entregadorId
- */
-export async function listarConcluidas(entregadorId) {
-    const {data, error} = await supabase
-    .from('entregas')
-    .select('*')
-    .eq('entregador_id', entregadorId)
-    .in('status', ['entregue', 'falha']) //procura os pedidos com status concluídos, mesmo sendo entregue ou não, a pendência foi concluída e esse é o pedido do guia.
-    .order('criado_em', {ascending: false});
-
-    if (error) throw error;
-
     return data;
 }
 
