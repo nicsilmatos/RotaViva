@@ -176,7 +176,7 @@ export async function deletarEntrega(entregaId){
 }
 
 /**
- * Atualiza os dados de um entregador ({id, nome, identificacao, role})
+ * Atualiza os dados de um entregador ({id, nome, identificacao})
  *
  * @param id
  * @param dados
@@ -188,7 +188,6 @@ export async function atualizarEntregador(id, dados) {
     .update({
         nome: dados.nome,
         identificacao: dados.identificacao,
-        role: dados.role
     })
     .eq('id', id)
     .select()
