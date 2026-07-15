@@ -36,8 +36,8 @@ export default function App() {
         Necessário para o react-navigation funcionar corretamente.
       */}
       <SafeAreaProvider>
-    // NavigationContainer precisa envolver TUDO — é o que guarda o estado
-    // de navegação (qual tela está no topo da pilha agora).
+    {/* NavigationContainer precisa envolver TUDO — é o que guarda o estado 
+    de navegação (qual tela está no topo da pilha agora). */}
     <NavigationContainer>
       {/* initialRouteName define qual tela abre primeiro quando o app inicia */}
       <Stack.Navigator initialRouteName="Login">
